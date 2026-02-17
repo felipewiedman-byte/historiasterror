@@ -33,7 +33,6 @@
     }
 
     .story-card {
-      /* Sin líneas, solo color transparente */
       border: none;
       border-radius: 8px;
       padding: 12px 15px;
@@ -42,24 +41,17 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transition: all 0.2s;
     }
 
-    /* YouTube - Rojo más transparente */
+    /* Colores más transparentes */
     .platform-yt {
-      background: rgba(255, 0, 0, 0.5);
+      background: rgba(255, 0, 0, 0.4);
     }
-
-    /* Twitch - Morado más transparente */
     .platform-tw {
-      background: rgba(145, 70, 255, 0.5);
+      background: rgba(145, 70, 255, 0.4);
     }
-
-    /* Facebook - Azul más transparente */
     .platform-fb {
-      background: rgba(24, 119, 242, 0.5);
+      background: rgba(24, 119, 242, 0.4);
     }
 
     .story-header {
@@ -67,7 +59,6 @@
       align-items: center;
       gap: 10px;
       margin-bottom: 6px;
-      /* SIN LÍNEA DIVISORIA */
     }
 
     .platform-badge {
@@ -77,8 +68,6 @@
       border-radius: 20px;
       color: #ffffff;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border: none;
       background: rgba(0, 0, 0, 0.3);
     }
 
@@ -90,7 +79,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 2px black;
     }
 
     .story-text {
@@ -99,7 +88,7 @@
       color: #ffffff;
       overflow-y: auto;
       max-height: 110px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 2px black;
     }
 
     .story-text::-webkit-scrollbar {
@@ -109,20 +98,10 @@
       background: rgba(255, 255, 255, 0.4);
       border-radius: 10px;
     }
-    .story-text::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-    }
 
     @keyframes slideUp {
-      from { 
-        opacity: 0; 
-        transform: translateY(15px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .story-card.removing {
@@ -130,10 +109,7 @@
     }
 
     @keyframes slideDown {
-      to { 
-        opacity: 0; 
-        transform: translateY(-15px); 
-      }
+      to { opacity: 0; transform: translateY(-15px); }
     }
   </style>
 </head>
@@ -142,12 +118,12 @@
 <div id="chat-container"></div>
 
 <script>
-  // SOLO LEE DEL TXT
   const container = document.getElementById('chat-container');
   const platforms = ['yt', 'tw', 'fb'];
   const platformNames = { yt: 'YouTube', tw: 'Twitch', fb: 'Facebook' };
   let stories = [];
   let storyIndex = 0;
+  let intervalId = null;
 
   // Mostrar mensaje de carga
   container.innerHTML = `
@@ -187,8 +163,15 @@
 
       // Limpiar y empezar
       container.innerHTML = '';
+      
+      // Mostrar primera historia
       mostrarHistoria();
-      setInterval(mostrarHistoria, 10000);
+      
+      // Limpiar intervalo anterior si existe
+      if (intervalId) clearInterval(intervalId);
+      
+      // Crear nuevo intervalo
+      intervalId = setInterval(mostrarHistoria, 10000);
     })
     .catch(error => {
       // Mostrar error
@@ -205,11 +188,16 @@
     });
 
   function mostrarHistoria() {
-    if (stories.length === 0) return;
+    // Verificar que hay historias
+    if (!stories || stories.length === 0) return;
     
+    // Seleccionar plataforma aleatoria
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
-    const historia = stories[storyIndex % stories.length];
     
+    // Obtener historia actual y avanzar índice (circular)
+    const historia = stories[storyIndex];
+    
+    // Crear tarjeta
     const card = document.createElement('div');
     card.className = `story-card platform-${platform}`;
     card.innerHTML = `
@@ -220,13 +208,12 @@
       <div class="story-text">${historia.text.replace(/\n/g, '<br>')}</div>
     `;
     
-    // Añadir la nueva tarjeta al FINAL (abajo)
+    // Añadir al final (abajo)
     container.appendChild(card);
     
-    // LIMITAR A 4 VENTANAS SIEMPRE
-    while (container.children.length > 4) {
-      const tarjetaEliminar = container.children[0]; // La de arriba
-      
+    // Limitar a 4 tarjetas
+    if (container.children.length > 4) {
+      const tarjetaEliminar = container.children[0];
       tarjetaEliminar.classList.add('removing');
       
       setTimeout(() => {
@@ -236,7 +223,8 @@
       }, 280);
     }
     
-    storyIndex++;
+    // Avanzar índice circularmente
+    storyIndex = (storyIndex + 1) % stories.length;
   }
 </script>
 
