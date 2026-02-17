@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Historias 24/7</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: transparent;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    #chat-container {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .story-card {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      padding: 12px 15px;
+      animation: fadeIn 0.4s ease;
+      max-height: 200px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .story-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #333333;
+      padding-bottom: 6px;
+    }
+
+    .platform-badge {
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #222222;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .platform-yt .platform-badge { background: #ff0000; }
+    .platform-tw .platform-badge { background: #9146ff; }
+    .platform-fb .platform-badge { background: #1877f2; }
+
+    .story-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffffff;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .story-text {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #cccccc;
+      overflow-y: auto;
+      max-height: 110px;
+    }
+
+    .story-text::-webkit-scrollbar {
+      width: 4px;
+    }
+    .story-text::-webkit-scrollbar-thumb {
+      background: #555555;
+      border-radius: 4px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="chat-container"></div>
+
+<script>
+  // SOLO LEE DEL TXT - SIN HISTORIAS INCRUSTADAS
+  const container = document.getElementById('chat-container');
+  const platforms = ['yt', 'tw', 'fb'];
+  const platformNames = { yt: 'YouTube', tw: 'Twitch', fb: 'Facebook' };
+  let stories = [];
+  let storyIndex = 0;
+
+  // Mostrar mensaje de carga
+  container.innerHTML = `
+    <div class="story-card platform-yt">
+      <div class="story-header">
+        <span class="platform-badge">CARGANDO</span>
+        <div class="story-title">Leyendo historias.txt...</div>
+      </div>
+      <div class="story-text">Espere un momento</div>
+    </div>
+  `;
+
+  // LEER EL ARCHIVO TXT
+  fetch('historias.txt')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('No se encuentra historias.txt');
+      }
+      return response.text();
+    })
+    .then(data => {
+      // Procesar el archivo
+      const bloques = data.split('---').map(b => b.trim()).filter(b => b.length > 0);
+      
+      stories = bloques.map(bloque => {
+        const lineas = bloque.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lineas.length === 0) return null;
+        return {
+          title: lineas[0],
+          text: lineas.slice(1).join('\n')
+        };
+      }).filter(s => s !== null);
+
+      if (stories.length === 0) {
+        throw new Error('El archivo está vacío');
+      }
+
+      // Limpiar y empezar
+      container.innerHTML = '';
+      mostrarHistoria();
+      setInterval(mostrarHistoria, 10000);
+    })
+    .catch(error => {
+      // Mostrar error
+      container.innerHTML = `
+        <div class="story-card platform-yt">
+          <div class="story-header">
+            <span class="platform-badge">ERROR</span>
+            <div class="story-title">No se encontró historias.txt</div>
+          </div>
+          <div class="story-text">Coloque el archivo en la misma carpeta que este HTML</div>
+        </div>
+      `;
+      console.error(error);
+    });
+
+  function mostrarHistoria() {
+    if (stories.length === 0) return;
+    
+    const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    const historia = stories[storyIndex % stories.length];
+    
+    const card = document.createElement('div');
+    card.className = `story-card platform-${platform}`;
+    card.innerHTML = `
+      <div class="story-header">
+        <span class="platform-badge">${platformNames[platform]}</span>
+        <div class="story-title">${historia.title}</div>
+      </div>
+      <div class="story-text">${historia.text.replace(/\n/g, '<br>')}</div>
+    `;
+    
+    container.appendChild(card);
+    
+    while (container.children.length > 5) {
+      container.removeChild(container.children[0]);
+    }
+    
+    storyIndex++;
+  }
+</script>
+
+</body>
+</html>
