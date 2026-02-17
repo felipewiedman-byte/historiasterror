@@ -13,7 +13,7 @@
 
     body {
       background: transparent;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,39 +24,42 @@
       width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       justify-content: flex-end;
     }
 
     .story-card {
-      background: #000000;
-      border: 1px solid #333333;
-      border-radius: 8px;
-      padding: 12px 15px;
+      background: rgba(40, 40, 40, 0.85);  /* Más claro y con transparencia suave */
+      border: 1px solid #666666;  /* Borde más visible */
+      border-radius: 10px;
+      padding: 14px 16px;
       animation: fadeIn 0.4s ease;
-      max-height: 200px;
+      max-height: 220px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      backdrop-filter: none; /* Sin blur */
+      -webkit-backdrop-filter: none;
     }
 
     .story-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #333333;
-      padding-bottom: 6px;
+      gap: 12px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #777777;
+      padding-bottom: 8px;
     }
 
     .platform-badge {
       font-size: 12px;
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: #222222;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;  /* Más redondeado */
+      background: #333333;
       color: #ffffff;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .platform-yt .platform-badge { background: #ff0000; }
@@ -65,33 +68,38 @@
 
     .story-title {
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 600;
       color: #ffffff;
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: none; /* Sin sombra */
     }
 
     .story-text {
       font-size: 14px;
-      line-height: 1.4;
-      color: #cccccc;
+      line-height: 1.5;
+      color: #f0f0f0;  /* Texto más claro */
       overflow-y: auto;
-      max-height: 110px;
+      max-height: 120px;
     }
 
     .story-text::-webkit-scrollbar {
-      width: 4px;
+      width: 5px;
     }
     .story-text::-webkit-scrollbar-thumb {
-      background: #555555;
-      border-radius: 4px;
+      background: #888888;
+      border-radius: 10px;
+    }
+    .story-text::-webkit-scrollbar-track {
+      background: #333333;
+      border-radius: 10px;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
