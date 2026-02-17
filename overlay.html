@@ -16,100 +16,95 @@
       font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
       display: flex;
       justify-content: center;
-      align-items: flex-end;
+      align-items: flex-end; /* Alinea al fondo */
       min-height: 100vh;
-      margin: 0;
       padding: 20px;
     }
 
     #chat-container {
       width: 400px;
       display: flex;
-      flex-direction: column-reverse;
-      gap: 8px;
+      flex-direction: column-reverse; /* ¡NUEVAS TARJETAS ABAJO! */
+      gap: 10px;
       justify-content: flex-end;
       max-height: 600px;
       overflow: hidden;
     }
 
     .story-card {
-      border: none;
-      border-radius: 8px;
-      padding: 12px 15px;
-      animation: slideUp 0.4s ease;
-      max-height: 200px;
+      border: 0px solid;
+      border-radius: 10px;
+      padding: 14px 16px;
+      animation: fadeIn 0.4s ease;
+      max-height: 220px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    /* Colores más transparentes */
+    /* COLORES DE PLATAFORMA - TRANSPARENTES */
     .platform-yt {
       background: rgba(255, 0, 0, 0.4);
+      border-color: #ff9999;
     }
     .platform-tw {
       background: rgba(145, 70, 255, 0.4);
+      border-color: #b285ff;
     }
     .platform-fb {
       background: rgba(24, 119, 242, 0.4);
+      border-color: #7aa5f5;
     }
 
     .story-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 12px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 8px;
     }
 
     .platform-badge {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
-      padding: 3px 10px;
+      padding: 5px 12px;
       border-radius: 20px;
+      background: rgba(0, 0, 0, 0.4);
       color: #ffffff;
       text-transform: uppercase;
-      background: rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.5px;
     }
 
     .story-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       color: #ffffff;
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-shadow: 1px 1px 2px black;
     }
 
     .story-text {
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.5;
       color: #ffffff;
       overflow-y: auto;
-      max-height: 110px;
-      text-shadow: 1px 1px 2px black;
+      max-height: 120px;
     }
 
     .story-text::-webkit-scrollbar {
-      width: 4px;
+      width: 5px;
     }
     .story-text::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(255,255,255,0.5);
       border-radius: 10px;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(15px); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .story-card.removing {
-      animation: slideDown 0.3s ease forwards;
-    }
-
-    @keyframes slideDown {
-      to { opacity: 0; transform: translateY(-15px); }
     }
   </style>
 </head>
@@ -123,7 +118,6 @@
   const platformNames = { yt: 'YouTube', tw: 'Twitch', fb: 'Facebook' };
   let stories = [];
   let storyIndex = 0;
-  let intervalId = null;
 
   // Mostrar mensaje de carga
   container.innerHTML = `
@@ -164,14 +158,18 @@
       // Limpiar y empezar
       container.innerHTML = '';
       
-      // Mostrar primera historia
-      mostrarHistoria();
+      // Mostrar 4 historias iniciales
+      for (let i = 0; i < 4; i++) {
+        mostrarHistoria();
+      }
       
-      // Limpiar intervalo anterior si existe
-      if (intervalId) clearInterval(intervalId);
-      
-      // Crear nuevo intervalo
-      intervalId = setInterval(mostrarHistoria, 10000);
+      // Rotar cada 10 segundos: borra arriba, agrega abajo
+      setInterval(() => {
+        if (container.children.length >= 4) {
+          container.removeChild(container.children[0]); // Borra la de arriba
+        }
+        mostrarHistoria(); // Agrega nueva abajo
+      }, 10000);
     })
     .catch(error => {
       // Mostrar error
@@ -188,16 +186,11 @@
     });
 
   function mostrarHistoria() {
-    // Verificar que hay historias
-    if (!stories || stories.length === 0) return;
+    if (stories.length === 0) return;
     
-    // Seleccionar plataforma aleatoria
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    const historia = stories[storyIndex % stories.length];
     
-    // Obtener historia actual y avanzar índice (circular)
-    const historia = stories[storyIndex];
-    
-    // Crear tarjeta
     const card = document.createElement('div');
     card.className = `story-card platform-${platform}`;
     card.innerHTML = `
@@ -208,23 +201,8 @@
       <div class="story-text">${historia.text.replace(/\n/g, '<br>')}</div>
     `;
     
-    // Añadir al final (abajo)
-    container.appendChild(card);
-    
-    // Limitar a 4 tarjetas
-    if (container.children.length > 4) {
-      const tarjetaEliminar = container.children[0];
-      tarjetaEliminar.classList.add('removing');
-      
-      setTimeout(() => {
-        if (tarjetaEliminar.parentNode === container) {
-          container.removeChild(tarjetaEliminar);
-        }
-      }, 280);
-    }
-    
-    // Avanzar índice circularmente
-    storyIndex = (storyIndex + 1) % stories.length;
+    container.appendChild(card); // Siempre agrega abajo
+    storyIndex = (storyIndex + 1) % stories.length; // Vuelve al inicio si se acaban
   }
 </script>
 
