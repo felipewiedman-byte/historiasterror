@@ -16,90 +16,124 @@
       font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-end;
       min-height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
 
     #chat-container {
       width: 400px;
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      flex-direction: column-reverse;
+      gap: 8px;
       justify-content: flex-end;
+      max-height: 600px;
+      overflow: hidden;
     }
 
     .story-card {
-      background: rgba(40, 40, 40, 0.85);  /* Más claro y con transparencia suave */
-      border: 1px solid #666666;  /* Borde más visible */
-      border-radius: 10px;
-      padding: 14px 16px;
-      animation: fadeIn 0.4s ease;
-      max-height: 220px;
+      /* Sin líneas, solo color transparente */
+      border: none;
+      border-radius: 8px;
+      padding: 12px 15px;
+      animation: slideUp 0.4s ease;
+      max-height: 200px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      backdrop-filter: none; /* Sin blur */
+      backdrop-filter: none;
       -webkit-backdrop-filter: none;
+      transition: all 0.2s;
+    }
+
+    /* YouTube - Rojo más transparente */
+    .platform-yt {
+      background: rgba(255, 0, 0, 0.5);
+    }
+
+    /* Twitch - Morado más transparente */
+    .platform-tw {
+      background: rgba(145, 70, 255, 0.5);
+    }
+
+    /* Facebook - Azul más transparente */
+    .platform-fb {
+      background: rgba(24, 119, 242, 0.5);
     }
 
     .story-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #777777;
-      padding-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 6px;
+      /* SIN LÍNEA DIVISORIA */
     }
 
     .platform-badge {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 20px;  /* Más redondeado */
-      background: #333333;
+      padding: 3px 10px;
+      border-radius: 20px;
       color: #ffffff;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      border: none;
+      background: rgba(0, 0, 0, 0.3);
     }
 
-    .platform-yt .platform-badge { background: #ff0000; }
-    .platform-tw .platform-badge { background: #9146ff; }
-    .platform-fb .platform-badge { background: #1877f2; }
-
     .story-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: #ffffff;
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-shadow: none; /* Sin sombra */
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
     .story-text {
-      font-size: 14px;
-      line-height: 1.5;
-      color: #f0f0f0;  /* Texto más claro */
+      font-size: 13px;
+      line-height: 1.4;
+      color: #ffffff;
       overflow-y: auto;
-      max-height: 120px;
+      max-height: 110px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
     .story-text::-webkit-scrollbar {
-      width: 5px;
+      width: 4px;
     }
     .story-text::-webkit-scrollbar-thumb {
-      background: #888888;
+      background: rgba(255, 255, 255, 0.4);
       border-radius: 10px;
     }
     .story-text::-webkit-scrollbar-track {
-      background: #333333;
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 10px;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes slideUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(15px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+
+    .story-card.removing {
+      animation: slideDown 0.3s ease forwards;
+    }
+
+    @keyframes slideDown {
+      to { 
+        opacity: 0; 
+        transform: translateY(-15px); 
+      }
     }
   </style>
 </head>
@@ -108,7 +142,7 @@
 <div id="chat-container"></div>
 
 <script>
-  // SOLO LEE DEL TXT - SIN HISTORIAS INCRUSTADAS
+  // SOLO LEE DEL TXT
   const container = document.getElementById('chat-container');
   const platforms = ['yt', 'tw', 'fb'];
   const platformNames = { yt: 'YouTube', tw: 'Twitch', fb: 'Facebook' };
@@ -186,10 +220,20 @@
       <div class="story-text">${historia.text.replace(/\n/g, '<br>')}</div>
     `;
     
+    // Añadir la nueva tarjeta al FINAL (abajo)
     container.appendChild(card);
     
-    while (container.children.length > 5) {
-      container.removeChild(container.children[0]);
+    // LIMITAR A 4 VENTANAS SIEMPRE
+    while (container.children.length > 4) {
+      const tarjetaEliminar = container.children[0]; // La de arriba
+      
+      tarjetaEliminar.classList.add('removing');
+      
+      setTimeout(() => {
+        if (tarjetaEliminar.parentNode === container) {
+          container.removeChild(tarjetaEliminar);
+        }
+      }, 280);
     }
     
     storyIndex++;
